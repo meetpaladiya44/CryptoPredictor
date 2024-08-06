@@ -1,68 +1,69 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-contract CrowdFunding {
-    struct Campaign {
+contract CryptoPrediction {
+    struct Prediction {
         address owner;
-        string title;
-        string description;
-        uint256 target;
-        uint256 deadline;
-        uint256 amountCollected;
-        address[] donators;
-        uint256[] donations;
+        string coin;
+        string reasoning;
+        uint256 currentPrice;
+        uint256 targetPrice;
+        uint256 stakeAmount;
+        uint256 targetDate;
+        uint256 totalFeesCollected;
     }
 
-    mapping(uint256 => Campaign) public campaigns;
+    mapping(uint256 => Prediction) public predictions;
 
-    uint256 public numberOfCampaigns = 0;
+    uint256 public numberOfpredictions = 0;
 
-    function createCampaign(address _owner, string memory _title, string memory _description, uint256 _target, uint256 _deadline) public returns (uint256) {
-        Campaign storage campaign = campaigns[numberOfCampaigns];
+    function createprediction(address _owner, string memory _coin, string memory _reasoning, uint256 _currentPrice, uint256 _targetPrice, uint256 _stakeAmount, uint256 _targetDate) public returns (uint256) {
+        Prediction storage prediction = predictions[numberOfpredictions];
 
-        require(campaign.deadline < block.timestamp, "The deadline should be a date in the future.");
+        require(prediction.targetDate < block.timestamp, "The Target Date should be a date in the future.");
 
-        campaign.owner = _owner;
-        campaign.title = _title;
-        campaign.description = _description;
-        campaign.target = _target;
-        campaign.deadline = _deadline;
-        campaign.amountCollected = 0;
+        prediction.owner = _owner;
+        prediction.coin = _coin;
+        prediction.reasoning = _reasoning;
+        prediction.currentPrice = _currentPrice;
+        prediction.targetPrice = _targetPrice;
+        prediction.stakeAmount = _stakeAmount;
+        prediction.targetDate = _targetDate;
+        prediction.totalFeesCollected = 0;
 
-        numberOfCampaigns++;
+        numberOfpredictions++;
 
-        return numberOfCampaigns - 1;
+        return numberOfpredictions - 1;
     }
 
-    function donateToCampaign(uint256 _id) public payable {
-        uint256 amount = msg.value;
+    function viewerFees(uint256 _id) public payable {
+        uint256 amount = 1000000000000000;
 
-        Campaign storage campaign = campaigns[_id];
+        Prediction storage prediction = predictions[_id];
 
-        campaign.donators.push(msg.sender);
-        campaign.donations.push(amount);
-
-        (bool sent,) = payable(campaign.owner).call{value: amount}("");
+        (bool sent,) = payable(prediction.owner).call{value: amount}("");
 
         if(sent) {
-            campaign.amountCollected = campaign.amountCollected + amount;
+            prediction.totalFeesCollected = prediction.totalFeesCollected + amount;
         }
     }
 
-    function getDonators(uint256 _id) view public returns (address[] memory, uint256[] memory) {
-        return (campaigns[_id].donators, campaigns[_id].donations);
-    }
 
-    function getCampaigns() public view returns (Campaign[] memory) {
-        Campaign[] memory allCampaigns = new Campaign[](numberOfCampaigns);
+    function getpredictions() public view returns (Prediction[] memory) {
+        Prediction[] memory allpredictions = new Prediction[](numberOfpredictions);
 
-        for(uint i = 0; i < numberOfCampaigns; i++) {
-            Campaign storage item = campaigns[i];
+        for(uint i = 0; i < numberOfpredictions; i++) {
+            Prediction storage item = predictions[i];
 
-            allCampaigns[i] = item;
+            allpredictions[i] = item;
         }
 
-        return allCampaigns;
+        return allpredictions;
+    }
+
+    function getTotalFeesCollected(uint256 _id) public view returns (uint256) {
+        require(_id < numberOfpredictions, "Invalid prediction ID");
+        return predictions[_id].totalFeesCollected;
     }
 
     //TEST
